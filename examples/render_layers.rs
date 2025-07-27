@@ -1,49 +1,54 @@
 use bevy::{prelude::*, render::view::RenderLayers};
-use bevy_infinite_grid::{InfiniteGridBundle, InfiniteGridPlugin};
+use bevy_infinite_grid::{InfiniteGrid2DBundle, InfiniteGrid2DPlugin};
 
 fn main() {
     App::new()
-        .add_plugins((DefaultPlugins, InfiniteGridPlugin))
+        .add_plugins((DefaultPlugins, InfiniteGrid2DPlugin))
         .add_systems(Startup, setup_system)
         .add_systems(Update, toggle_layers)
         .run();
 }
 
-fn setup_system(
-    mut commands: Commands,
-    mut meshes: ResMut<Assets<Mesh>>,
-    mut standard_materials: ResMut<Assets<StandardMaterial>>,
-) {
-    commands.spawn((InfiniteGridBundle::default(), RenderLayers::layer(1)));
+fn setup_system(mut commands: Commands) {
+    // Spawn the infinite 2D grid on render layer 1
+    commands.spawn((InfiniteGrid2DBundle::default(), RenderLayers::layer(1)));
 
+    // Spawn a 2D camera on render layer 1
     commands.spawn((
-        Camera3d::default(),
-        Camera {
-            hdr: true,
-            ..default()
-        },
-        Transform::from_xyz(0.0, 4.37, 14.77),
+        Camera2d::default(),
+        Transform::from_xyz(0.0, 0.0, 10.0),
         RenderLayers::layer(1),
     ));
 
+    // Add some 2D sprites for reference on different layers
     commands.spawn((
-        DirectionalLight { ..default() },
-        Transform::from_translation(Vec3::X * 15. + Vec3::Y * 20.).looking_at(Vec3::ZERO, Vec3::Y),
-    ));
-
-    // cube
-    commands.spawn((
-        Mesh3d(meshes.add(Cuboid::new(1.0, 1.0, 1.0))),
-        MeshMaterial3d(standard_materials.add(StandardMaterial::default())),
-        Transform::from_xyz(3.0, 4.0, 0.0)
-            .with_rotation(Quat::from_rotation_arc(Vec3::Y, Vec3::ONE.normalize()))
-            .with_scale(Vec3::splat(1.5)),
+        Sprite {
+            color: Color::srgb(0.8, 0.2, 0.2),
+            custom_size: Some(Vec2::new(50.0, 50.0)),
+            ..default()
+        },
+        Transform::from_xyz(100.0, 100.0, 1.0),
+        RenderLayers::layer(1), // Same layer as grid
     ));
 
     commands.spawn((
-        Mesh3d(meshes.add(Cuboid::new(1.0, 1.0, 1.0))),
-        MeshMaterial3d(standard_materials.add(StandardMaterial::default())),
-        Transform::from_xyz(0.0, 2.0, 0.0),
+        Sprite {
+            color: Color::srgb(0.2, 0.8, 0.2),
+            custom_size: Some(Vec2::new(30.0, 30.0)),
+            ..default()
+        },
+        Transform::from_xyz(-150.0, 50.0, 1.0),
+        RenderLayers::layer(0), // Different layer - won't show initially
+    ));
+
+    commands.spawn((
+        Sprite {
+            color: Color::srgb(0.2, 0.2, 0.8),
+            custom_size: Some(Vec2::new(40.0, 40.0)),
+            ..default()
+        },
+        Transform::from_xyz(0.0, -200.0, 1.0),
+        RenderLayers::layer(1), // Same layer as grid
     ));
 }
 
