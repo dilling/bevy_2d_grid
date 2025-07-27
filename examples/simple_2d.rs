@@ -1,11 +1,11 @@
-use bevy::prelude::*;
+use bevy::{input::mouse::MouseWheel, prelude::*};
 use bevy_infinite_grid::{InfiniteGrid2DBundle, InfiniteGrid2DPlugin};
 
 fn main() {
     App::new()
         .add_plugins((DefaultPlugins, InfiniteGrid2DPlugin))
         .add_systems(Startup, setup_system)
-        .add_systems(Update, camera_movement)
+        .add_systems(Update, (camera_movement, camera_zoom))
         .run();
 }
 
@@ -90,5 +90,45 @@ fn camera_movement(
         let movement_delta = direction * movement.speed * dt;
         transform.translation.x += movement_delta.x;
         transform.translation.y += movement_delta.y;
+    }
+}
+
+fn camera_zoom(
+    key_input: Res<ButtonInput<KeyCode>>,
+    mut scroll_events: EventReader<MouseWheel>,
+    mut camera_query: Query<&mut Projection, With<Camera2d>>,
+) {
+    if let Ok(mut projection) = camera_query.single_mut() {
+        if let Projection::Orthographic(ortho) = projection.as_mut() {
+            let zoom_speed = 0.1;
+            
+            // Keyboard zoom controls
+            if key_input.just_pressed(KeyCode::Equal) || key_input.just_pressed(KeyCode::NumpadAdd) {
+                // Zoom in - decrease scale (makes things appear larger)
+                ortho.scale *= 1.0 - zoom_speed;
+                ortho.scale = ortho.scale.max(0.1); // Cap max zoom
+            }
+            
+            if key_input.just_pressed(KeyCode::Minus) || key_input.just_pressed(KeyCode::NumpadSubtract) {
+                // Zoom out - increase scale (makes things appear smaller)
+                ortho.scale *= 1.0 + zoom_speed;
+                ortho.scale = ortho.scale.min(10.0); // Cap min zoom
+            }
+            
+            // Scroll wheel zoom controls
+            for scroll in scroll_events.read() {
+                let scroll_zoom_speed = 0.05; // Smaller steps for smoother scrolling
+                
+                if scroll.y > 0.0 {
+                    // Scroll up - zoom in
+                    ortho.scale *= 1.0 - scroll_zoom_speed;
+                    ortho.scale = ortho.scale.max(0.1);
+                } else if scroll.y < 0.0 {
+                    // Scroll down - zoom out
+                    ortho.scale *= 1.0 + scroll_zoom_speed;
+                    ortho.scale = ortho.scale.min(10.0);
+                }
+            }
+        }
     }
 }
