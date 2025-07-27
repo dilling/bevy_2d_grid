@@ -1,4 +1,4 @@
-use bevy::{input::mouse::MouseWheel, prelude::*};
+use bevy::{input::mouse::{MouseWheel, MouseMotion}, prelude::*};
 use bevy_infinite_grid::{InfiniteGrid2DBundle, InfiniteGrid2DPlugin};
 
 fn main() {
@@ -63,13 +63,35 @@ impl Default for CameraMovement {
 fn camera_movement(
     time: Res<Time>,
     key_input: Res<ButtonInput<KeyCode>>,
-    mut camera_query: Query<(&mut Transform, &CameraMovement), With<Camera2d>>,
+    mouse_input: Res<ButtonInput<MouseButton>>,
+    mut mouse_motion: EventReader<MouseMotion>,
+    mut camera_query: Query<(&mut Transform, &CameraMovement, &Projection), With<Camera2d>>,
 ) {
-    let Ok((mut transform, movement)) = camera_query.single_mut() else {
+    let Ok((mut transform, movement, projection)) = camera_query.single_mut() else {
         return;
     };
     let dt = time.delta_secs();
     
+    // Handle click-to-pan with mouse
+    if mouse_input.pressed(MouseButton::Left) {
+        for motion in mouse_motion.read() {
+            // Convert mouse delta to world space movement
+            let mouse_delta = motion.delta;
+            
+            // Scale the movement by the camera's orthographic scale for proper panning
+            let scale = if let Projection::Orthographic(ortho) = projection {
+                ortho.scale
+            } else {
+                1.0
+            };
+            
+            // Pan in opposite direction of mouse movement (natural feel)
+            transform.translation.x -= mouse_delta.x * scale;
+            transform.translation.y += mouse_delta.y * scale; // Y is flipped in screen space
+        }
+    }
+    
+    // Handle keyboard movement
     let mut direction = Vec2::ZERO;
     
     if key_input.pressed(KeyCode::KeyW) || key_input.pressed(KeyCode::ArrowUp) {
