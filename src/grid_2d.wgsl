@@ -47,7 +47,7 @@ fn vertex(vertex: Vertex) -> VertexOutput {
     let view_pos_normalized = view_pos.xy / view_pos.w;
     
     // Then transform from view space to world space
-    let world_pos_4d = view.inverse_view * vec4<f32>(view_pos_normalized, 0.0, 1.0);
+    let world_pos_4d = view.view * vec4<f32>(view_pos_normalized, 0.0, 1.0);
     out.world_position = world_pos_4d.xy;
     
     return out;
