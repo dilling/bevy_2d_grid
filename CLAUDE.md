@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-This is a Bevy plugin that provides infinite grid rendering for 3D and 2D scenes. The plugin supports both 3D infinite grids aligned to arbitrary coordinate spaces and 2D infinite grids for orthographic views.
+This is a Bevy plugin that provides infinite 2D grid rendering for orthographic scenes. The plugin renders infinite grids for 2D games and applications.
 
 ## Development Commands
 
@@ -23,29 +23,24 @@ This is a Bevy plugin that provides infinite grid rendering for 3D and 2D scenes
 - `cargo doc --all-features --no-deps` - Generate documentation
 
 ### Examples
-- `cargo run --example simple` - Run 3D grid demo with camera controls
-- `cargo run --example simple_2d` - Run 2D grid demo
-- `cargo run --example render_layers` - Run render layers example
+- `cargo run --example simple` - Run 2D grid demo with camera controls (WASD/arrows + mouse pan + scroll zoom)
+- `cargo run --example render_layers` - Run render layers example (press T to toggle between layers)
 
 ## Architecture
 
 ### Plugin Structure
-The crate provides two main plugins:
-- `InfiniteGridPlugin` - For 3D infinite grids (uses `render.rs`)
-- `InfiniteGrid2DPlugin` - For 2D infinite grids (uses `render_2d.rs`)
+The crate provides one main plugin:
+- `InfiniteGrid2DPlugin` - For 2D infinite grids (uses `render.rs`)
 
 ### Core Components
-- `InfiniteGridSettings` - Configuration for 3D grids (axis colors, line colors, fadeout, scale)
+- `InfiniteGrid2D` - Marker component for 2D grid entities
 - `InfiniteGrid2DSettings` - Configuration for 2D grids (axis colors, line colors, scale)
-- `InfiniteGridBundle` - Complete entity bundle for 3D grids
 - `InfiniteGrid2DBundle` - Complete entity bundle for 2D grids
 
 ### Render Pipeline
-Both 3D and 2D grids use custom render pipelines with WGSL shaders:
-- `src/grid.wgsl` - 3D grid fragment shader
-- `src/grid_2d.wgsl` - 2D grid fragment shader
-- `src/render.rs` - 3D rendering implementation with view frustum culling
-- `src/render_2d.rs` - 2D rendering implementation
+2D grids use a custom render pipeline with WGSL shaders:
+- `src/grid.wgsl` - 2D grid fragment shader
+- `src/render.rs` - 2D rendering implementation
 
 The rendering system:
 1. Extracts grid entities and camera settings from the main world
@@ -56,11 +51,12 @@ The rendering system:
 
 ### Key Features
 - Per-camera grid settings override support
-- Customizable axis and grid line colors
-- Configurable grid scale and fadeout (3D only)
+- Customizable axis and grid line colors (X=red, Y=green by default)
+- Configurable grid scale
 - No frustum culling (grids are infinite)
 - Alpha blending for transparent rendering
 - Support for HDR and standard rendering formats
+- RenderLayers support for selective rendering
 
 ## Bevy Version Compatibility
 
