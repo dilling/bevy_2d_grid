@@ -2,8 +2,7 @@ struct InfiniteGrid2DSettings {
     scale: f32,
     x_axis_col: vec3<f32>,
     y_axis_col: vec3<f32>,
-    minor_line_col: vec4<f32>,
-    major_line_col: vec4<f32>,
+    line_col: vec4<f32>,
 };
 
 struct View {
@@ -64,34 +63,29 @@ fn fragment(in: VertexOutput) -> FragmentOutput {
     let scale = grid_settings.scale;
     let coord = in.world_position * scale;
     
-    // Calculate grid lines using derivatives for anti-aliasing
-    let derivative = fwidth(coord);
-    let grid = abs(fract(coord - 0.5) - 0.5) / derivative;
+    // Calculate grid lines using derivatives for anti-aliasing (every 10 units)
+    let derivative = fwidth(coord * 0.1);
+    let grid = abs(fract((coord * 0.1) - 0.5) - 0.5) / derivative;
     let line = min(grid.x, grid.y);
     
-    // Major grid lines (every 10 units)
-    let derivative2 = fwidth(coord * 0.1);
-    let grid2 = abs(fract((coord * 0.1) - 0.5) - 0.5) / derivative2;
-    let major_line = min(grid2.x, grid2.y);
-    
     // Axis lines (X and Y axes)
-    let grid_axis = abs(coord) / derivative;
+    let axis_derivative = fwidth(coord);
+    let grid_axis = abs(coord) / axis_derivative;
     let axis_line = min(grid_axis.x, grid_axis.y);
     
-    // Calculate alpha values for different line types
-    var alpha = vec3<f32>(1.0) - min(vec3<f32>(axis_line, major_line, line), vec3<f32>(1.0));
-    alpha.y *= (1.0 - alpha.x) * grid_settings.major_line_col.a;
-    alpha.z *= (1.0 - (alpha.x + alpha.y)) * grid_settings.minor_line_col.a;
+    // Calculate alpha values for line types
+    var alpha = vec2<f32>(1.0) - min(vec2<f32>(axis_line, line), vec2<f32>(1.0));
+    alpha.y *= (1.0 - alpha.x) * grid_settings.line_col.a;
     
-    let total_alpha = alpha.x + alpha.y + alpha.z;
+    let total_alpha = alpha.x + alpha.y;
     alpha /= max(total_alpha, 0.001); // Prevent division by zero
-    alpha = clamp(alpha, vec3<f32>(0.0), vec3<f32>(1.0));
+    alpha = clamp(alpha, vec2<f32>(0.0), vec2<f32>(1.0));
     
     // Choose axis color based on which axis is more prominent
     let axis_color = mix(grid_settings.x_axis_col, grid_settings.y_axis_col, step(grid_axis.x, grid_axis.y));
     
     let grid_color = vec4<f32>(
-        axis_color * alpha.x + grid_settings.major_line_col.rgb * alpha.y + grid_settings.minor_line_col.rgb * alpha.z,
+        axis_color * alpha.x + grid_settings.line_col.rgb * alpha.y,
         max(total_alpha, 0.0)
     );
     

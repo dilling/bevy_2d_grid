@@ -79,8 +79,7 @@ pub struct InfiniteGrid2DUniform {
     scale: f32,
     x_axis_color: Vec3,
     y_axis_color: Vec3,
-    minor_line_color: Vec4,
-    major_line_color: Vec4,
+    line_color: Vec4,
 }
 
 impl InfiniteGrid2DUniform {
@@ -89,8 +88,7 @@ impl InfiniteGrid2DUniform {
             scale: settings.scale,
             x_axis_color: settings.x_axis_color.to_linear().to_vec3(),
             y_axis_color: settings.y_axis_color.to_linear().to_vec3(),
-            minor_line_color: settings.minor_line_color.to_linear().to_vec4(),
-            major_line_color: settings.major_line_color.to_linear().to_vec4(),
+            line_color: settings.line_color.to_linear().to_vec4(),
         }
     }
 }
