@@ -1,5 +1,5 @@
 struct InfiniteGrid2DSettings {
-    scale: f32,
+    grid_size: f32,
     x_axis_col: vec3<f32>,
     y_axis_col: vec3<f32>,
     line_col: vec4<f32>,
@@ -60,17 +60,17 @@ struct FragmentOutput {
 fn fragment(in: VertexOutput) -> FragmentOutput {
     var out: FragmentOutput;
     
-    let scale = grid_settings.scale;
-    let coord = in.world_position * scale;
+    // Convert world position to grid coordinates
+    let coord = in.world_position / grid_settings.grid_size;
     
-    // Calculate grid lines using derivatives for anti-aliasing (every 10 units)
-    let derivative = fwidth(coord * 0.1);
-    let grid = abs(fract((coord * 0.1) - 0.5) - 0.5) / derivative;
+    // Calculate grid lines using derivatives for anti-aliasing
+    let derivative = fwidth(coord);
+    let grid = abs(fract(coord - 0.5) - 0.5) / derivative;
     let line = min(grid.x, grid.y);
     
     // Axis lines (X and Y axes)
-    let axis_derivative = fwidth(coord);
-    let grid_axis = abs(coord) / axis_derivative;
+    let axis_derivative = fwidth(in.world_position);
+    let grid_axis = abs(in.world_position) / axis_derivative;
     let axis_line = min(grid_axis.x, grid_axis.y);
     
     // Calculate alpha values for line types

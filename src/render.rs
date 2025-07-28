@@ -76,7 +76,7 @@ struct ExtractedInfiniteGrid2D {
 
 #[derive(Debug, ShaderType)]
 pub struct InfiniteGrid2DUniform {
-    scale: f32,
+    grid_size: f32,
     x_axis_color: Vec3,
     y_axis_color: Vec3,
     line_color: Vec4,
@@ -85,7 +85,7 @@ pub struct InfiniteGrid2DUniform {
 impl InfiniteGrid2DUniform {
     fn from_settings(settings: &InfiniteGrid2DSettings) -> Self {
         Self {
-            scale: settings.scale,
+            grid_size: settings.grid_size,
             x_axis_color: settings.x_axis_color.to_linear().to_vec3(),
             y_axis_color: settings.y_axis_color.to_linear().to_vec3(),
             line_color: settings.line_color.to_linear().to_vec4(),
