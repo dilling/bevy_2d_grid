@@ -29,6 +29,7 @@ pub struct InfiniteGrid2DSettings {
     pub y_axis_color: Color,
     pub line_color: Color,
     pub grid_size: f32,
+    pub sort_key: f32,
 }
 
 impl Default for InfiniteGrid2DSettings {
@@ -38,6 +39,7 @@ impl Default for InfiniteGrid2DSettings {
             y_axis_color: Color::srgb(0.2, 1.0, 0.2),
             line_color: Color::srgb(0.25, 0.25, 0.25),
             grid_size: 100.0,
+            sort_key: 0.0,
         }
     }
 }

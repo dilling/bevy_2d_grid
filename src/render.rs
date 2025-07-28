@@ -372,12 +372,12 @@ fn queue_infinite_grids_2d(
             },
         );
         for &entity in entities.iter::<InfiniteGrid2DSettings>() {
-            if infinite_grids.get(entity.0).is_ok() {
+            if let Ok(extracted_grid) = infinite_grids.get(entity.0) {
                 phase.items.push(Transparent2d {
                     pipeline: pipeline_id,
                     entity,
                     draw_function: draw_function_id,
-                    sort_key: FloatOrd(f32::NEG_INFINITY),
+                    sort_key: FloatOrd(extracted_grid.settings.sort_key),
                     batch_range: 0..1,
                     extra_index: PhaseItemExtraIndex::None,
                     indexed: false,

@@ -10,7 +10,7 @@ fn main() {
 }
 
 fn setup_system(mut commands: Commands) {
-    // Spawn the infinite 2D grid
+    // Spawn the infinite 2D grid (sort_key 0.0 - middle layer)
     commands.spawn(InfiniteGrid2DBundle::default());
 
     // Spawn a 2D camera
@@ -20,14 +20,24 @@ fn setup_system(mut commands: Commands) {
         CameraMovement::default(),
     ));
 
-    // Add some 2D sprites for reference
+    // Add background elements (behind the grid) - negative sort keys or z < 0
+    commands.spawn((
+        Sprite {
+            color: Color::srgb(1., 1., 1.),
+            custom_size: Some(Vec2::new(300.0, 300.0)),
+            ..default()
+        },
+        Transform::from_xyz(-250.0, -250.0, -1.0), // Behind grid
+    ));
+
+    // Add foreground sprites (in front of the grid) - positive sort keys or z > 0
     commands.spawn((
         Sprite {
             color: Color::srgb(0.8, 0.2, 0.2),
             custom_size: Some(Vec2::new(100.0, 100.0)),
             ..default()
         },
-        Transform::from_xyz(150.0, 150.0, 1.0),
+        Transform::from_xyz(150.0, 150.0, 1.0), // In front of grid
     ));
 
     commands.spawn((
@@ -36,7 +46,7 @@ fn setup_system(mut commands: Commands) {
             custom_size: Some(Vec2::new(200.0, 200.0)),
             ..default()
         },
-        Transform::from_xyz(-200.0, 200.0, 1.0),
+        Transform::from_xyz(-200.0, 200.0, 1.0), // In front of grid
     ));
 
     commands.spawn((
@@ -45,7 +55,7 @@ fn setup_system(mut commands: Commands) {
             custom_size: Some(Vec2::new(100.0, 100.0)),
             ..default()
         },
-        Transform::from_xyz(30.0, -230.0, 1.0),
+        Transform::from_xyz(30.0, -230.0, 1.0), // In front of grid
     ));
 }
 
