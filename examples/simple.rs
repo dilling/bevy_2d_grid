@@ -1,5 +1,5 @@
 use bevy::{input::mouse::{MouseWheel, MouseMotion}, prelude::*};
-use bevy_infinite_grid::{InfiniteGrid2DBundle, InfiniteGrid2DPlugin};
+use bevy_2d_grid::{InfiniteGrid2DBundle, InfiniteGrid2DPlugin};
 
 fn main() {
     App::new()
