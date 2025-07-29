@@ -1,6 +1,6 @@
 [package]
 name = "bevy_2d_grid"
-version = "0.0.1"
+version = "0.1.0"
 authors = [
   "David Illing <dilling123@gmail.com>",
 ]
