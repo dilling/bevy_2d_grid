@@ -2,7 +2,7 @@
 name = "bevy_2d_grid"
 version = "0.0.1"
 authors = [
-  "David Illing<dilling123@gmail.com>",
+  "David Illing <dilling123@gmail.com>",
 ]
 edition = "2021"
 description = "A 2D infinite grid for Bevy"
