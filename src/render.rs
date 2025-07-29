@@ -24,7 +24,7 @@ use bevy::{
             DepthBiasState, DepthStencilState, DynamicUniformBuffer, FragmentState,
             MultisampleState, PipelineCache, PolygonMode, PrimitiveState, RenderPipelineDescriptor,
             ShaderStages, ShaderType, SpecializedRenderPipeline, SpecializedRenderPipelines,
-            StencilFaceState, StencilState, TextureFormat, VertexState,
+            StencilState, TextureFormat, VertexState,
         },
         renderer::{RenderDevice, RenderQueue},
         sync_world::RenderEntity,
@@ -119,7 +119,7 @@ pub struct Grid2DViewUniform {
     inverse_projection: Mat4,
     view: Mat4,
     inverse_view: Mat4,
-    world_position: Vec3,
+    world_position: Vec2,
 }
 
 #[derive(Resource, Default)]
@@ -225,7 +225,7 @@ fn prepare_grid_2d_view_uniforms(
                 view,
                 inverse_view,
                 inverse_projection: projection.inverse(),
-                world_position: camera.world_from_view.translation(),
+                world_position: camera.world_from_view.translation().xy(),
             }),
         });
     }
@@ -458,17 +458,8 @@ impl SpecializedRenderPipeline for InfiniteGrid2DPipeline {
                 format: TextureFormat::Depth32Float,
                 depth_write_enabled: false,
                 depth_compare: CompareFunction::Always,
-                stencil: StencilState {
-                    front: StencilFaceState::IGNORE,
-                    back: StencilFaceState::IGNORE,
-                    read_mask: 0,
-                    write_mask: 0,
-                },
-                bias: DepthBiasState {
-                    constant: 0,
-                    slope_scale: 0.0,
-                    clamp: 0.0,
-                },
+                stencil: StencilState::default(),
+                bias: DepthBiasState::default(),
             }),
             multisample: MultisampleState {
                 count: key.sample_count,

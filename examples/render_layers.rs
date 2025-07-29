@@ -1,5 +1,5 @@
 use bevy::{prelude::*, render::view::RenderLayers};
-use bevy_infinite_grid::{InfiniteGrid2DBundle, InfiniteGrid2DPlugin};
+use bevy_2d_grid::{InfiniteGrid2DBundle, InfiniteGrid2DPlugin};
 
 fn main() {
     App::new()
