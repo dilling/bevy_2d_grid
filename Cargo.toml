@@ -5,7 +5,7 @@ authors = [
   "David Illing <dilling123@gmail.com>",
 ]
 edition = "2021"
-description = "A 2D infinite grid for Bevy"
+description = "A infinite 2D grid for Bevy"
 license = "MIT OR Apache-2.0"
 repository = "https://github.com/dilling/bevy_2d_grid"
 documentation = "https://docs.rs/bevy_2d_grid"

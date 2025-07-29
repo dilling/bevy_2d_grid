@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-This is a Bevy plugin that provides infinite 2D grid rendering for orthographic scenes. The plugin renders infinite grids for 2D games and applications.
+This is a Bevy plugin that provides infinite 2D grid rendering for orthographic scenes. The plugin renders infinite grids for 2D games and applications. Adapted from the original 3D bevy_infinite_grid by Foresight Mining Software Corporation, optimized specifically for 2D use cases.
 
 ## Development Commands
 
@@ -34,7 +34,7 @@ The crate provides one main plugin:
 
 ### Core Components
 - `InfiniteGrid2D` - Marker component for 2D grid entities
-- `InfiniteGrid2DSettings` - Configuration for 2D grids (axis colors, line colors, scale)
+- `InfiniteGrid2DSettings` - Configuration for 2D grids (axis colors, line colors, grid_size, show_axes, sort_key)
 - `InfiniteGrid2DBundle` - Complete entity bundle for 2D grids
 
 ### Render Pipeline
@@ -51,12 +51,16 @@ The rendering system:
 
 ### Key Features
 - Per-camera grid settings override support
-- Customizable axis and grid line colors (X=red, Y=green by default)
-- Configurable grid scale
+- Customizable axis and grid line colors (configurable, default: gray)
+- Configurable grid scale (grid_size parameter)
+- Optional axis visibility control (show_axes parameter, default: false)
+- Z-ordering control with sort_key for proper layering
 - No frustum culling (grids are infinite)
 - Alpha blending for transparent rendering
 - Support for HDR and standard rendering formats
 - RenderLayers support for selective rendering
+- Optimized 2D transformations (uses Vec2 instead of Vec3)
+- Anti-aliased grid lines using shader derivatives
 
 ## Bevy Version Compatibility
 
