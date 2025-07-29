@@ -10,7 +10,7 @@ struct View {
     inverse_projection: mat4x4<f32>,
     view: mat4x4<f32>,
     inverse_view: mat4x4<f32>,
-    world_position: vec3<f32>,
+    world_position: vec2<f32>,
 };
 
 @group(0) @binding(0) var<uniform> view: View;
@@ -40,14 +40,11 @@ fn vertex(vertex: Vertex) -> VertexOutput {
     var out: VertexOutput;
     out.clip_position = vec4<f32>(position, 0.0, 1.0);
     
-    // Convert clip space to world space properly
-    // First, unproject from clip space to view space
+    // Convert clip space directly to world space for 2D
     let view_pos = view.inverse_projection * vec4<f32>(position, 0.0, 1.0);
     let view_pos_normalized = view_pos.xy / view_pos.w;
-    
-    // Then transform from view space to world space
-    let world_pos_4d = view.view * vec4<f32>(view_pos_normalized, 0.0, 1.0);
-    out.world_position = world_pos_4d.xy;
+    let world_pos_2d = (view.view * vec4<f32>(view_pos_normalized, 0.0, 1.0)).xy;
+    out.world_position = world_pos_2d;
     
     return out;
 }
