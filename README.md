@@ -1,6 +1,6 @@
 <div align="center">
 
-# Bevy Infinite Grid
+# Bevy 2d Grid
 
 **Simple 2D infinite grid for bevy**
 
@@ -32,7 +32,7 @@ cargo run --example simple
 Add the plugin to the `[dependencies]` in `Cargo.toml`
 
 ```toml
-bevy_infinite_grid = { git = "https://github.com/dilling/bevy_2d_grid", branch = "main" }
+bevy_2d_grid = { git = "https://github.com/dilling/bevy_2d_grid", branch = "main" }
 ```
 
 Insert the infinite grid plugin after the default plugins.
