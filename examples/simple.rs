@@ -1,4 +1,7 @@
-use bevy::{input::mouse::{MouseWheel, MouseMotion}, prelude::*};
+use bevy::{
+    input::mouse::{MouseMotion, MouseWheel},
+    prelude::*,
+};
 use bevy_2d_grid::{InfiniteGrid2DBundle, InfiniteGrid2DPlugin};
 
 fn main() {
@@ -81,29 +84,29 @@ fn camera_movement(
         return;
     };
     let dt = time.delta_secs();
-    
+
     // Handle click-to-pan with mouse
     if mouse_input.pressed(MouseButton::Left) {
         for motion in mouse_motion.read() {
             // Convert mouse delta to world space movement
             let mouse_delta = motion.delta;
-            
+
             // Scale the movement by the camera's orthographic scale for proper panning
             let scale = if let Projection::Orthographic(ortho) = projection {
                 ortho.scale
             } else {
                 1.0
             };
-            
+
             // Pan in opposite direction of mouse movement (natural feel)
             transform.translation.x -= mouse_delta.x * scale;
             transform.translation.y += mouse_delta.y * scale; // Y is flipped in screen space
         }
     }
-    
+
     // Handle keyboard movement
     let mut direction = Vec2::ZERO;
-    
+
     if key_input.pressed(KeyCode::KeyW) || key_input.pressed(KeyCode::ArrowUp) {
         direction.y += 1.0;
     }
@@ -116,7 +119,7 @@ fn camera_movement(
     if key_input.pressed(KeyCode::KeyD) || key_input.pressed(KeyCode::ArrowRight) {
         direction.x += 1.0;
     }
-    
+
     if direction != Vec2::ZERO {
         direction = direction.normalize();
         let movement_delta = direction * movement.speed * dt;
@@ -133,24 +136,27 @@ fn camera_zoom(
     if let Ok(mut projection) = camera_query.single_mut() {
         if let Projection::Orthographic(ortho) = projection.as_mut() {
             let zoom_speed = 0.1;
-            
+
             // Keyboard zoom controls
-            if key_input.just_pressed(KeyCode::Equal) || key_input.just_pressed(KeyCode::NumpadAdd) {
+            if key_input.just_pressed(KeyCode::Equal) || key_input.just_pressed(KeyCode::NumpadAdd)
+            {
                 // Zoom in - decrease scale (makes things appear larger)
                 ortho.scale *= 1.0 - zoom_speed;
                 ortho.scale = ortho.scale.max(0.1); // Cap max zoom
             }
-            
-            if key_input.just_pressed(KeyCode::Minus) || key_input.just_pressed(KeyCode::NumpadSubtract) {
+
+            if key_input.just_pressed(KeyCode::Minus)
+                || key_input.just_pressed(KeyCode::NumpadSubtract)
+            {
                 // Zoom out - increase scale (makes things appear smaller)
                 ortho.scale *= 1.0 + zoom_speed;
                 ortho.scale = ortho.scale.min(10.0); // Cap min zoom
             }
-            
+
             // Scroll wheel zoom controls
             for scroll in scroll_events.read() {
                 let scroll_zoom_speed = 0.05; // Smaller steps for smoother scrolling
-                
+
                 if scroll.y > 0.0 {
                     // Scroll up - zoom in
                     ortho.scale *= 1.0 - scroll_zoom_speed;
