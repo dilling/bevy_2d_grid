@@ -64,4 +64,4 @@ The rendering system:
 
 ## Bevy Version Compatibility
 
-Currently targets Bevy 0.16.0. The project maintains compatibility with the latest stable Bevy release.
+Currently targets Bevy 0.18.0 (crate release 0.2.x). The project maintains compatibility with the latest stable Bevy release.

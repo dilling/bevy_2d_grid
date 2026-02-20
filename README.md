@@ -55,6 +55,7 @@ We intend to track the `main` branch of Bevy. PRs supporting this are welcome!
 
 | bevy | bevy_2d_grid |
 | ---- | ------------------ |
+| 0.18 | 0.2               |
 | 0.16 | 0.1               |
 
 ## License
