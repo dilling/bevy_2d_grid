@@ -74,7 +74,7 @@ fn camera_movement(
     time: Res<Time>,
     key_input: Res<ButtonInput<KeyCode>>,
     mouse_input: Res<ButtonInput<MouseButton>>,
-    mut mouse_motion: EventReader<MouseMotion>,
+    mut mouse_motion: MessageReader<MouseMotion>,
     mut camera_query: Query<(&mut Transform, &CameraMovement, &Projection), With<Camera2d>>,
 ) {
     let Ok((mut transform, movement, projection)) = camera_query.single_mut() else {
@@ -127,7 +127,7 @@ fn camera_movement(
 
 fn camera_zoom(
     key_input: Res<ButtonInput<KeyCode>>,
-    mut scroll_events: EventReader<MouseWheel>,
+    mut scroll_events: MessageReader<MouseWheel>,
     mut camera_query: Query<&mut Projection, With<Camera2d>>,
 ) {
     if let Ok(mut projection) = camera_query.single_mut() {

@@ -1,4 +1,4 @@
-use bevy::{prelude::*, render::view::RenderLayers};
+use bevy::{camera::visibility::RenderLayers, prelude::*};
 use bevy_2d_grid::{InfiniteGrid2DBundle, InfiniteGrid2DPlugin};
 
 fn main() {

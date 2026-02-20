@@ -1,7 +1,7 @@
 use std::borrow::Cow;
 
 use bevy::{
-    asset::{load_internal_asset, weak_handle},
+    asset::{load_internal_asset, uuid_handle},
     core_pipeline::core_2d::Transparent2d,
     ecs::{
         query::ROQueryItem,
@@ -19,23 +19,24 @@ use bevy::{
             RenderCommandResult, SetItemPipeline, ViewSortedRenderPhases,
         },
         render_resource::{
-            binding_types::uniform_buffer, BindGroup, BindGroupEntries, BindGroupLayout,
-            BindGroupLayoutEntries, BlendState, ColorTargetState, ColorWrites, CompareFunction,
-            DepthBiasState, DepthStencilState, DynamicUniformBuffer, FragmentState,
-            MultisampleState, PipelineCache, PolygonMode, PrimitiveState, RenderPipelineDescriptor,
-            ShaderStages, ShaderType, SpecializedRenderPipeline, SpecializedRenderPipelines,
-            StencilState, TextureFormat, VertexState,
+            binding_types::uniform_buffer, BindGroup, BindGroupEntries, BindGroupLayoutDescriptor,
+            BindGroupLayoutEntries, BlendState, ColorTargetState,
+            ColorWrites, CompareFunction, DepthBiasState, DepthStencilState, DynamicUniformBuffer,
+            FragmentState, MultisampleState, PipelineCache, PolygonMode, PrimitiveState,
+            PrimitiveTopology, RenderPipelineDescriptor, ShaderStages, ShaderType,
+            SpecializedRenderPipeline, SpecializedRenderPipelines, StencilState, TextureFormat,
+            VertexState,
         },
         renderer::{RenderDevice, RenderQueue},
         sync_world::RenderEntity,
         view::{ExtractedView, RenderVisibleEntities},
-        Extract, ExtractSchedule, Render, RenderApp, RenderSet,
+        Extract, ExtractSchedule, Render, RenderApp, RenderSystems,
     },
 };
 
 use crate::InfiniteGrid2DSettings;
 
-const GRID_SHADER_HANDLE: Handle<Shader> = weak_handle!("01968ec1-1753-7731-9b47-b50296bcb87b");
+const GRID_SHADER_HANDLE: Handle<Shader> = uuid_handle!("01968ec1-1753-7731-9b47-b50296bcb87b");
 
 pub fn render_app_builder(app: &mut App) {
     load_internal_asset!(app, GRID_SHADER_HANDLE, "grid.wgsl", Shader::from_wgsl);
@@ -56,7 +57,7 @@ pub fn render_app_builder(app: &mut App) {
         .add_systems(
             Render,
             (prepare_infinite_grids_2d, prepare_grid_2d_view_uniforms)
-                .in_set(RenderSet::PrepareResources),
+                .in_set(RenderSystems::PrepareResources),
         )
         .add_systems(
             Render,
@@ -64,9 +65,9 @@ pub fn render_app_builder(app: &mut App) {
                 prepare_bind_groups_for_infinite_grids_2d,
                 prepare_grid_2d_view_bind_groups,
             )
-                .in_set(RenderSet::PrepareBindGroups),
+                .in_set(RenderSystems::PrepareBindGroups),
         )
-        .add_systems(Render, queue_infinite_grids_2d.in_set(RenderSet::Queue));
+        .add_systems(Render, queue_infinite_grids_2d.in_set(RenderSystems::Queue));
 }
 
 #[derive(Component)]
@@ -147,8 +148,8 @@ impl<const I: usize, P: PhaseItem> RenderCommand<P> for SetGrid2DViewBindGroup<I
     #[inline]
     fn render<'w>(
         _item: &P,
-        (view_uniform, bind_group): ROQueryItem<'w, Self::ViewQuery>,
-        _entity: Option<ROQueryItem<'w, Self::ItemQuery>>,
+        (view_uniform, bind_group): ROQueryItem<'w, '_, Self::ViewQuery>,
+        _entity: Option<ROQueryItem<'w, '_, Self::ItemQuery>>,
         _param: SystemParamItem<'w, '_, Self::Param>,
         pass: &mut bevy::render::render_phase::TrackedRenderPass<'w>,
     ) -> RenderCommandResult {
@@ -167,8 +168,8 @@ impl<const I: usize, P: PhaseItem> RenderCommand<P> for SetInfiniteGrid2DBindGro
     #[inline]
     fn render<'w>(
         _item: &P,
-        camera_settings_offset: ROQueryItem<'w, Self::ViewQuery>,
-        base_offset: Option<ROQueryItem<'w, Self::ItemQuery>>,
+        camera_settings_offset: ROQueryItem<'w, '_, Self::ViewQuery>,
+        base_offset: Option<ROQueryItem<'w, '_, Self::ItemQuery>>,
         bind_group: SystemParamItem<'w, '_, Self::Param>,
         pass: &mut bevy::render::render_phase::TrackedRenderPass<'w>,
     ) -> RenderCommandResult {
@@ -197,8 +198,8 @@ impl<P: PhaseItem> RenderCommand<P> for FinishDrawInfiniteGrid2D {
     #[inline]
     fn render<'w>(
         _item: &P,
-        _view: ROQueryItem<'w, Self::ViewQuery>,
-        _entity: Option<ROQueryItem<'w, Self::ItemQuery>>,
+        _view: ROQueryItem<'w, '_, Self::ViewQuery>,
+        _entity: Option<ROQueryItem<'w, '_, Self::ItemQuery>>,
         _param: SystemParamItem<'w, '_, Self::Param>,
         pass: &mut bevy::render::render_phase::TrackedRenderPass<'w>,
     ) -> RenderCommandResult {
@@ -217,7 +218,7 @@ fn prepare_grid_2d_view_uniforms(
     view_uniforms.uniforms.clear();
     for (entity, camera) in views.iter() {
         let projection = camera.clip_from_view;
-        let view = camera.world_from_view.compute_matrix();
+        let view = camera.world_from_view.to_matrix();
         let inverse_view = view.inverse();
         commands.entity(entity).insert(Grid2DViewUniformOffset {
             offset: view_uniforms.uniforms.push(&Grid2DViewUniform {
@@ -238,6 +239,7 @@ fn prepare_grid_2d_view_uniforms(
 fn prepare_grid_2d_view_bind_groups(
     mut commands: Commands,
     render_device: Res<RenderDevice>,
+    pipeline_cache: Res<PipelineCache>,
     uniforms: Res<Grid2DViewUniforms>,
     pipeline: Res<InfiniteGrid2DPipeline>,
     views: Query<Entity, With<Grid2DViewUniformOffset>>,
@@ -246,7 +248,7 @@ fn prepare_grid_2d_view_bind_groups(
         for entity in views.iter() {
             let bind_group = render_device.create_bind_group(
                 "grid-2d-view-bind-group",
-                &pipeline.view_layout,
+                &pipeline_cache.get_bind_group_layout(&pipeline.view_layout),
                 &BindGroupEntries::single(binding.clone()),
             );
             commands
@@ -330,6 +332,7 @@ fn prepare_bind_groups_for_infinite_grids_2d(
     mut commands: Commands,
     uniforms: Res<InfiniteGrid2DUniforms>,
     pipeline: Res<InfiniteGrid2DPipeline>,
+    pipeline_cache: Res<PipelineCache>,
     render_device: Res<RenderDevice>,
 ) {
     let Some(binding) = uniforms.uniforms.binding() else {
@@ -338,7 +341,7 @@ fn prepare_bind_groups_for_infinite_grids_2d(
 
     let bind_group = render_device.create_bind_group(
         "infinite-grid-2d-bind-group",
-        &pipeline.infinite_grid_layout,
+        &pipeline_cache.get_bind_group_layout(&pipeline.infinite_grid_layout),
         &BindGroupEntries::single(binding.clone()),
     );
     commands.insert_resource(InfiniteGrid2DBindGroup { value: bind_group });
@@ -371,11 +374,11 @@ fn queue_infinite_grids_2d(
                 sample_count: msaa.samples(),
             },
         );
-        for &entity in entities.iter::<InfiniteGrid2DSettings>() {
-            if let Ok(extracted_grid) = infinite_grids.get(entity.0) {
-                phase.items.push(Transparent2d {
+        for &(entity, main_entity) in entities.iter::<InfiniteGrid2DSettings>() {
+            if let Ok(extracted_grid) = infinite_grids.get(entity) {
+                phase.add(Transparent2d {
                     pipeline: pipeline_id,
-                    entity,
+                    entity: (entity, main_entity),
                     draw_function: draw_function_id,
                     sort_key: FloatOrd(extracted_grid.settings.sort_key),
                     batch_range: 0..1,
@@ -397,21 +400,21 @@ type DrawInfiniteGrid2D = (
 
 #[derive(Resource)]
 struct InfiniteGrid2DPipeline {
-    view_layout: BindGroupLayout,
-    infinite_grid_layout: BindGroupLayout,
+    view_layout: BindGroupLayoutDescriptor,
+    infinite_grid_layout: BindGroupLayoutDescriptor,
 }
 
 impl FromWorld for InfiniteGrid2DPipeline {
     fn from_world(world: &mut World) -> Self {
-        let render_device = world.resource::<RenderDevice>();
-        let view_layout = render_device.create_bind_group_layout(
+        let _ = world;
+        let view_layout = BindGroupLayoutDescriptor::new(
             "grid-2d-view-bind-group-layout",
             &BindGroupLayoutEntries::single(
                 ShaderStages::VERTEX | ShaderStages::FRAGMENT,
                 uniform_buffer::<Grid2DViewUniform>(true),
             ),
         );
-        let infinite_grid_layout = render_device.create_bind_group_layout(
+        let infinite_grid_layout = BindGroupLayoutDescriptor::new(
             "infinite-grid-2d-bind-group-layout",
             &BindGroupLayoutEntries::single(
                 ShaderStages::FRAGMENT,
@@ -442,11 +445,11 @@ impl SpecializedRenderPipeline for InfiniteGrid2DPipeline {
             vertex: VertexState {
                 shader: GRID_SHADER_HANDLE,
                 shader_defs: vec![],
-                entry_point: Cow::Borrowed("vertex"),
+                entry_point: Some(Cow::Borrowed("vertex")),
                 buffers: vec![],
             },
             primitive: PrimitiveState {
-                topology: bevy::render::mesh::PrimitiveTopology::TriangleStrip,
+                topology: PrimitiveTopology::TriangleStrip,
                 strip_index_format: None,
                 front_face: bevy::render::render_resource::FrontFace::Ccw,
                 cull_mode: None,
@@ -469,7 +472,7 @@ impl SpecializedRenderPipeline for InfiniteGrid2DPipeline {
             fragment: Some(FragmentState {
                 shader: GRID_SHADER_HANDLE,
                 shader_defs: vec![],
-                entry_point: Cow::Borrowed("fragment"),
+                entry_point: Some(Cow::Borrowed("fragment")),
                 targets: vec![Some(ColorTargetState {
                     format: TextureFormat::bevy_default(),
                     blend: Some(BlendState::ALPHA_BLENDING),

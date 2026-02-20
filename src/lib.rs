@@ -1,10 +1,11 @@
 mod render;
 
 use bevy::{
+    camera::visibility::{self, NoFrustumCulling, VisibilityClass},
     prelude::*,
     render::{
         sync_world::SyncToRenderWorld,
-        view::{self, NoFrustumCulling, RenderVisibleEntities, VisibilityClass},
+        view::RenderVisibleEntities,
     },
 };
 
@@ -23,7 +24,7 @@ pub struct InfiniteGrid2D;
 
 #[derive(Component, Copy, Clone)]
 #[require(VisibilityClass)]
-#[component(on_add = view::add_visibility_class::<InfiniteGrid2DSettings>)]
+#[component(on_add = visibility::add_visibility_class::<InfiniteGrid2DSettings>)]
 pub struct InfiniteGrid2DSettings {
     pub x_axis_color: Color,
     pub y_axis_color: Color,
